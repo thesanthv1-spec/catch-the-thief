@@ -1,0 +1,25 @@
+body {
+    font-family: Arial;
+    text-align: center;
+    background: #111;
+    color: white;
+}
+
+input {
+    padding: 10px;
+    margin: 5px;
+}
+
+button {
+    padding: 10px 20px;
+    background: orange;
+    border: none;
+    cursor: pointer;
+}
+
+#players div {
+    margin: 5px;
+    padding: 5px;
+    background: #222;
+    border-radius: 5px;
+}
