@@ -20,14 +20,36 @@ function assignRoles(players) {
 
 io.on("connection", (socket) => {
 
+    // ✅ CREATE ROOM
+    socket.on("createRoom", ({ name, room }) => {
+
+        if (rooms[room]) {
+            socket.emit("errorMsg", "Room already exists!");
+            return;
+        }
+
+        rooms[room] = {
+            players: [],
+            host: socket.id,
+            started: false
+        };
+
+        socket.join(room);
+
+        rooms[room].players.push({
+            id: socket.id,
+            name
+        });
+
+        io.to(room).emit("updatePlayers", rooms[room].players);
+    });
+
+    // ✅ JOIN ROOM
     socket.on("joinRoom", ({ name, room }) => {
 
         if (!rooms[room]) {
-            rooms[room] = {
-                players: [],
-                host: socket.id,
-                started: false
-            };
+            socket.emit("errorMsg", "Room does not exist!");
+            return;
         }
 
         let data = rooms[room];
@@ -41,12 +63,13 @@ io.on("connection", (socket) => {
 
         data.players.push({
             id: socket.id,
-            name: name
+            name
         });
 
         io.to(room).emit("updatePlayers", data.players);
     });
 
+    // ✅ START GAME
     socket.on("startGame", (room) => {
         let data = rooms[room];
 
@@ -57,13 +80,19 @@ io.on("connection", (socket) => {
         assignRoles(data.players);
         data.started = true;
 
+        // send role to each player
         data.players.forEach(p => {
             io.to(p.id).emit("yourRole", p.role);
         });
 
+        // 🔥 show police to all
+        let policePlayer = data.players.find(p => p.role === "police");
+        io.to(room).emit("showPolice", policePlayer.name);
+
         io.to(room).emit("gameStarted");
     });
 
+    // ✅ POLICE GUESS
     socket.on("makeGuess", ({ room, targetId }) => {
         let players = rooms[room].players;
         let thief = players.find(p => p.role === "thief");
@@ -75,16 +104,21 @@ io.on("connection", (socket) => {
         io.to(room).emit("gameResult", result);
     });
 
+    // ✅ DISCONNECT FIX (DELETE EMPTY ROOMS)
     socket.on("disconnect", () => {
         for (let room in rooms) {
-            rooms[room].players =
-                rooms[room].players.filter(p => p.id !== socket.id);
+            let data = rooms[room];
 
-            io.to(room).emit("updatePlayers", rooms[room].players);
+            data.players = data.players.filter(p => p.id !== socket.id);
+
+            if (data.players.length === 0) {
+                delete rooms[room]; // 🔥 fix duplicate room issue
+            } else {
+                io.to(room).emit("updatePlayers", data.players);
+            }
         }
     });
 });
 
-// ✅ IMPORTANT FOR HOSTING
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => console.log("Server running on port " + PORT));
