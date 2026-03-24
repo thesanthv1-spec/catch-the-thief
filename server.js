@@ -106,18 +106,31 @@ io.on("connection", (socket) => {
 
     // ✅ DISCONNECT FIX (DELETE EMPTY ROOMS)
     socket.on("disconnect", () => {
-        for (let room in rooms) {
-            let data = rooms[room];
+    for (let room in rooms) {
+        let data = rooms[room];
 
-            data.players = data.players.filter(p => p.id !== socket.id);
+        // 🔴 If host leaves → close room for everyone
+        if (data.host === socket.id) {
+            io.to(room).emit("roomClosed");
 
-            if (data.players.length === 0) {
-                delete rooms[room]; // 🔥 fix duplicate room issue
-            } else {
-                io.to(room).emit("updatePlayers", data.players);
+            // force all sockets to leave room
+            let clients = io.sockets.adapter.rooms.get(room);
+            if (clients) {
+                clients.forEach(id => {
+                    let s = io.sockets.sockets.get(id);
+                    if (s) s.leave(room);
+                });
             }
+
+            delete rooms[room];
+            continue; // 🔥 important (not return)
         }
-    });
+
+        // remove player normally
+        data.players = data.players.filter(p => p.id !== socket.id);
+
+        io.to(room).emit("updatePlayers", data.players);
+    }
 });
 
 const PORT = process.env.PORT || 3000;

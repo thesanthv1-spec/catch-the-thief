@@ -41,7 +41,23 @@ function joinRoom() {
 
     currentRoom = room;
     socket.emit("joinRoom", { name: myName, room });
-    goToGame();
+    socket.on("updatePlayers", (data) => {
+    players = data;
+
+    // 🔥 only enter game AFTER success
+    if (document.getElementById("game").style.display !== "block") {
+        goToGame();
+    }
+
+    let div = document.getElementById("players");
+    div.innerHTML = "";
+
+    data.forEach(p => {
+        let el = document.createElement("div");
+        el.innerText = p.name;
+        div.appendChild(el);
+    });
+});
 }
 
 function goToGame() {
@@ -123,12 +139,36 @@ function guess() {
     let selected = document.querySelector("input[name='target']:checked");
     if (!selected) return alert("Select someone!");
 
-    socket.emit("makeGuess", {
-        room: currentRoom,
-        targetId: selected.value
-    });
+    socket.on("makeGuess", ({ room, targetId }) => {
+    let data = rooms[room];
+    if (!data) return;
+
+    let players = data.players;
+
+    let thief = players.find(p => p.role === "thief");
+    let selected = players.find(p => p.id === targetId);
+
+    let result = "";
+
+    if (thief.id === targetId) {
+        result = `🎉 Correct!<br>Thief: ${thief.name}`;
+    } else {
+        result = `❌ Wrong!<br>
+        You selected: ${selected.name} (${selected.role})<br>
+        Real thief: ${thief.name}`;
+    }
+
+    io.to(room).emit("gameResult", result);
+});
 }
 
 socket.on("gameResult", (msg) => {
     document.getElementById("result").innerHTML = msg;
+});
+socket.on("roomClosed", () => {
+    alert("Room closed by host");
+
+    // reset UI instead of reload
+    document.getElementById("game").style.display = "none";
+    document.getElementById("step2").style.display = "block";
 });
