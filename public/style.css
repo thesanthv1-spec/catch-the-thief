@@ -17,9 +17,21 @@ button {
     cursor: pointer;
 }
 
+button:hover {
+    background: darkorange;
+}
+
 #players div {
     margin: 5px;
     padding: 5px;
     background: #222;
     border-radius: 5px;
+}
+
+label {
+    display: block;
+    margin: 5px;
+    padding: 5px;
+    background: #222;
+    cursor: pointer;
 }

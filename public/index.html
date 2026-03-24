@@ -6,27 +6,25 @@
 </head>
 <body>
 
+<h1>Catch The Thief 🕵️</h1>
+
 <div id="step1">
-    <h2>Enter Your Name</h2>
     <input id="name" placeholder="Your Name">
-    <button onclick="goIn()">Go In</button>
+    <button onclick="goIn()">Enter</button>
 </div>
 
 <div id="step2" style="display:none;">
-    <h2>Welcome <span id="playerName"></span></h2>
-
+    <h3>Welcome <span id="playerName"></span></h3>
     <button onclick="showCreate()">Create Room</button>
     <button onclick="showJoin()">Join Room</button>
 </div>
 
 <div id="createRoomDiv" style="display:none;">
-    <h3>Create Room</h3>
     <input id="createRoomName" placeholder="Room Name">
     <button onclick="createRoom()">Create</button>
 </div>
 
 <div id="joinRoomDiv" style="display:none;">
-    <h3>Join Room</h3>
     <input id="joinRoomName" placeholder="Room Name">
     <button onclick="joinRoom()">Join</button>
 </div>
@@ -34,17 +32,16 @@
 <div id="game" style="display:none;">
     <h2 id="roomTitle"></h2>
     <h3 id="role"></h3>
+    <h3 id="policeName"></h3>
 
     <div id="players"></div>
 
-    <button id="startBtn" onclick="startGame()" style="display:none;">
-        Start Game
-    </button>
+    <button id="startBtn" onclick="startGame()" style="display:none;">Start Game</button>
 
     <div id="policePanel" style="display:none;">
         <h3>Select Thief</h3>
         <div id="choices"></div>
-        <button onclick="guess()">Do Game</button>
+        <button onclick="guess()">Catch Thief</button>
     </div>
 
     <h2 id="result"></h2>
