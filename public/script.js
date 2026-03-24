@@ -31,7 +31,6 @@ function createRoom() {
     if (!room) return alert("Enter room name");
 
     currentRoom = room;
-
     socket.emit("createRoom", { name: myName, room });
     goToGame();
 }
@@ -41,7 +40,6 @@ function joinRoom() {
     if (!room) return alert("Enter room name");
 
     currentRoom = room;
-
     socket.emit("joinRoom", { name: myName, room });
     goToGame();
 }
@@ -84,6 +82,11 @@ socket.on("roomFull", () => {
     alert("Room is full!");
 });
 
+socket.on("roomClosed", () => {
+    alert("Host left! Room closed.");
+    location.reload();
+});
+
 function startGame() {
     socket.emit("startGame", currentRoom);
 }
@@ -110,7 +113,6 @@ socket.on("yourRole", (role) => {
     }
 });
 
-// 🔥 SHOW POLICE TO ALL
 socket.on("showPolice", (name) => {
     let el = document.createElement("h3");
     el.innerText = "👮 Police is: " + name;
@@ -128,5 +130,5 @@ function guess() {
 }
 
 socket.on("gameResult", (msg) => {
-    document.getElementById("result").innerText = msg;
+    document.getElementById("result").innerHTML = msg;
 });
